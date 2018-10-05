@@ -39,7 +39,7 @@ def find_categorical_columns(column_type):
 
 
 def dict_to_table(dictionary,columns=["Key","Vales"],header=True):
-	t=PrettyTable(columns,header)
+	t=PrettyTable(columns,header=header)
 	for k,v in dictionary.items():
 		t.add_row([k,v])
 	return t
@@ -54,14 +54,30 @@ def list_to_table(l,column_name=None):
 		t.add_row([c])
 	return t
 
+		
 def describe_data(file_path,extension="xls",is_detailed=False):
-	if extension=="xls":
-		data=pd.read_excel(file_path)
-	elif extension=="csv":
-		data=pd.read_csv(file_path)
-	else:
-		print("Not Supported file type")
-		return 
+	"""
+	Makes reports to analyse and get overview of data quick
+	Input:
+	file_path: location of the file
+	extension: file_extension of the file
+	is_detailed: Describe detailed report which prints the name of the columns instead of the just numbers
+
+	#TODO:
+	* return t instead of printing
+	* additioal analystics and statistics 
+	"""
+	try:
+		if extension=="xls":
+			data=pd.read_excel(file_path)
+		elif extension=="csv":
+			data=pd.read_csv(file_path)
+		else:
+			print("Not Supported file type")
+			return 
+	except Exception as e:
+		print("Unable to Open file"+e.__traceback__)
+		return
 	#details 
 	t=PrettyTable(['Description',"Information"])
 	t.title=file_path.split('/')[-1]
@@ -86,13 +102,20 @@ def describe_data(file_path,extension="xls",is_detailed=False):
 	print(t)
 
 def describe_series(series):
-
+	"""
+	Makes reports to analyse and get overview of data quick
+	Input:
+	series : pandas series for analysis
+	#TODO:
+	* return t instead of printing
+	* additioal analystics and statistics 
+	"""	
 	t=PrettyTable(['Description','Information'])
 	t.title=series.name
 	is_category=series.value_counts().keys().dtype=='O'
-	t.add_row(['# of Empty Rows',dict_to_table(dict(series.isnull().value_counts()),header=False)])
+	t.add_row(['Empty Rows',dict_to_table(dict(series.isnull().value_counts()),header=False)])
 	if is_category:
-		t.add_row(['Category and Count'],dict_to_table(dict(series.value_counts())))
+		t.add_row(['Category and Count',dict_to_table(dict(series.value_counts()))])
 	else:
 		t.add_row(['Statistics',dict_to_table(dict(series.describe()))])
 	#ToDo: Add statistical tests
