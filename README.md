@@ -7,3 +7,5 @@ Generates report for understanding data
 ##FeatureEngineers
 Helpers for feature engineering
 
+##MergeEngineer
+Helper to merge files
