@@ -97,5 +97,36 @@ class NumericalEngineer(object):
 		raise NotImplementedError
 		
 
+
+
+class CastingEngineer(object):
+	"""docstring for NumericalEngineer"""
+	def __init__(self,casting_map,drop_key=False):
+		super(CastingEngineer, self).__init__()
+		self.casting_map=casting_map
+		self.date_columns=self.casting_map["Date"]
+		self.numerical_columns=self.casting_map["Numerical"]
+		self.category_columns=self.casting_map["Category"]
+		self.key_columns=self.casting_map["Key"]
+		self.drop_key=drop_key
+
+	def fit(self,X,y=None):
+		return self
+	def transform(self,X):
+		if self.drop_key:
+			X=X.drop(self.key_columns, axis=1)
+		X[self.date_columns]=X[self.date_columns].apply(pd.to_datetime)
+		X[self.numerical_columns]=X[self.numerical_columns].apply(pd.to_numeric)
+		print (1111)
+		X[self.category_columns]=X[self.category_columns].fillna(-1)
+		print (1111)
+		X[self.category_columns]=X[self.category_columns].astype("category")
+		print (1111)
+		return X
+
+
+
+
+
 		
 
