@@ -25,8 +25,8 @@ class Fisher(BaseEstimator, TransformerMixin):
 
 class DateTimeEngineer(BaseEstimator,TransformerMixin):
 	"""Helper to Add Date/Time features to data"""
-	def __init__(self,columns,options=["day_of_week"]):
-		self.options_supported=["day_of_week","absolute_time","day_of_year","day_of_month","hour_of_day","minute_of_hour","dayofweek","dayofyear","dayofmonth","days_in_month","daysinmonth","hour","is_leap_year","is_month_end","is_month_start","is_quarter_end","is_year_start","is_year_end","minute","month","month_name","quarter","second","week","weekday","weekday_name","weekofyear"]
+	def __init__(self,columns,options=["dayofweek","dayofyear"]):
+		self.options_supported=["dayofweek","dayofyear","dayofmonth","daysinmonth","hour","is_leap_year","is_month_end","is_month_start","is_quarter_end","is_year_start","is_year_end","minute","month","month_name","quarter","second","week","weekday","weekday_name","weekofyear"]
 		self.__check_options(options)
 		self.options=options
 		self.columns_to_transform=columns
@@ -35,7 +35,7 @@ class DateTimeEngineer(BaseEstimator,TransformerMixin):
 	def __check_options(self,options):
 		for opt in options: 
 			if opt not in self.options_supported:
-				raise NotImplementedError
+				raise NotImplementedError(opt)
 
 	def __check_columns(self,X):
 		for i in self.columns_to_transform:
@@ -73,7 +73,7 @@ class CategoryEngineer(object):
 		super(CategoryEngineer, self).__init__()
 		self.options_supported= ["BackwardDifferenceEncoder","BinaryEncoder","HashingEncoder","HelmertEncoder","OneHotEncoder","OrdinalEncoder","SumEncoder","PolynomialEncoder","BaseNEncoder","TargetEncoder","LeaveOneOutEncoder"]
 		self.columns=columns
-		self.encoding_method=options[0]
+		self.encoding_method=encoding_method[0]
 
 	def __check_options(self,options):
 		for opt in options: 
@@ -81,8 +81,9 @@ class CategoryEngineer(object):
 				raise NotImplementedError
 
 	def fit(self,X,y=None):
-		self.encoder=getattr(ce,self.encoding_method)
+		self.encoder=getattr(ce,self.encoding_method)(cols=self.columns,use_cat_names=True)
 		self.encoder.fit(X,y)
+		return self
 
 	def transform(self,x):
 		return self.encoder.transform(x)
