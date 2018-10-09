@@ -2,10 +2,7 @@ import pandas as pd
 import numpy as np 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
-from sklearn.grid_search import GridSearchCV
-from sklearn.datasets import load_iris
 import category_encoders as ce
 
 class Fisher(BaseEstimator, TransformerMixin):
@@ -72,9 +69,11 @@ class DateTimeEngineer(BaseEstimator,TransformerMixin):
 
 class CategoryEngineer(object):
 	"""docstring for CategoryEngineer"""
-	def __init__(self, options=["OneHotEncoder"]):
+	def __init__(self,columns, encoding_method=["OneHotEncoder"]):
 		super(CategoryEngineer, self).__init__()
 		self.options_supported= ["BackwardDifferenceEncoder","BinaryEncoder","HashingEncoder","HelmertEncoder","OneHotEncoder","OrdinalEncoder","SumEncoder","PolynomialEncoder","BaseNEncoder","TargetEncoder","LeaveOneOutEncoder"]
+		self.columns=columns
+		self.encoding_method=options[0]
 
 	def __check_options(self,options):
 		for opt in options: 
@@ -82,11 +81,11 @@ class CategoryEngineer(object):
 				raise NotImplementedError
 
 	def fit(self,X,y=None):
-
-
+		self.encoder=getattr(ce,self.encoding_method)
+		self.encoder.fit(X,y)
 
 	def transform(self,x):
-
+		return self.encoder.transform(x)
 
 
 class NumericalEngineer(object):
