@@ -117,11 +117,8 @@ class CastingEngineer(object):
 			X=X.drop(self.key_columns, axis=1)
 		X[self.date_columns]=X[self.date_columns].apply(pd.to_datetime)
 		X[self.numerical_columns]=X[self.numerical_columns].apply(pd.to_numeric)
-		print (1111)
 		X[self.category_columns]=X[self.category_columns].fillna(-1)
-		print (1111)
-		X[self.category_columns]=X[self.category_columns].astype("category")
-		print (1111)
+		# X[self.category_columns]=X[self.category_columns].astype("category")
 		return X
 
 
