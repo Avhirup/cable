@@ -1,27 +1,10 @@
 import pandas as pd 
 import numpy as np 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler,Normalizer,KBinsDiscretizer
 from sklearn.pipeline import Pipeline
 import category_encoders as ce
 
-class Fisher(BaseEstimator, TransformerMixin):
-    def __init__(self,percentile=0.95):
-            self.percentile = percentile
-    def fit(self, X, y):
-            from numpy import shape, argsort, ceil
-            X_pos, X_neg = X[y==1], X[y==0]
-            X_mean = X.mean(axis=0)
-            X_pos_mean, X_neg_mean = X_pos.mean(axis=0), X_neg.mean(axis=0)
-            deno = (1.0/(shape(X_pos)[0]-1))*X_pos.var(axis=0) + (1.0/(shape(X_neg)[0]-1))*X_neg.var(axis=0)
-            num = (X_pos_mean - X_mean)**2 + (X_neg_mean - X_mean)**2
-            F = num/deno
-            sort_F = argsort(F)[::-1]
-            n_feature = (float(self.percentile)/100)*shape(X)[1]
-            self.ind_feature = sort_F[:ceil(n_feature)]
-            return self
-    def transform(self, x):
-            return x[self.ind_feature,:]
 
 class DateTimeEngineer(BaseEstimator,TransformerMixin):
 	"""Helper to Add Date/Time features to data"""
@@ -65,15 +48,14 @@ class DateTimeEngineer(BaseEstimator,TransformerMixin):
 		return pd.concat([x,all_concat],axis=1)
 
 
-
-
-class CategoryEngineer(object):
+class CategoryEngineer(BaseEstimator,TransformerMixin):
 	"""docstring for CategoryEngineer"""
 	def __init__(self,columns, encoding_method=["OneHotEncoder"]):
 		super(CategoryEngineer, self).__init__()
 		self.options_supported= ["BackwardDifferenceEncoder","BinaryEncoder","HashingEncoder","HelmertEncoder","OneHotEncoder","OrdinalEncoder","SumEncoder","PolynomialEncoder","BaseNEncoder","TargetEncoder","LeaveOneOutEncoder"]
 		self.columns=columns
 		self.encoding_method=encoding_method[0]
+		self.__check_options(encoding_method)
 
 	def __check_options(self,options):
 		for opt in options: 
@@ -89,17 +71,41 @@ class CategoryEngineer(object):
 		return self.encoder.transform(x)
 
 
-class NumericalEngineer(object):
+class NumericalEngineer(BaseEstimator,TransformerMixin):
 	"""docstring for NumericalEngineer"""
-	def __init__(self, arg):
+	def __init__(self, column_encoding_method):
 		super(NumericalEngineer, self).__init__()
-		self.arg = arg
-		raise NotImplementedError
+		self.column_encoding_method = column_encoding_method
+		self.__options_supported= ["KBinsDiscretizer","MinMaxScaler","StandardScaler"]
+
+	def __check_options(self,_options):
+		for opt in options: 
+			if opt not in self.options_supported:
+				raise NotImplementedError		
+
+	def fit(self,X,y=None):
+		return self
+
+	def transform(self,x):
+		temp=pd.DataFrame()
+		try:
+			for key in self.column_encoding_method:
+				try:	
+					scaler=globals()[key]()
+				except:
+					continue
+				c=list(map(lambda x:x+f"_{key}",self.column_encoding_method[key]))
+				print(c)
+				scaled=pd.DataFrame(scaler.fit_transform(x[self.column_encoding_method[key]]),columns=c)
+				temp=pd.concat([temp,scaled],axis=1)
+		except Exception as e:
+			raise e
 		
+		return pd.concat([x,temp],axis=1)
 
 
 
-class CastingEngineer(object):
+class CastingEngineer(BaseEstimator,TransformerMixin):
 	"""docstring for NumericalEngineer"""
 	def __init__(self,casting_map,drop_key=False):
 		super(CastingEngineer, self).__init__()
