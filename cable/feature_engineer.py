@@ -1,6 +1,7 @@
 import pandas as pd 
 import numpy as np 
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler,Normalizer,KBinsDiscretizer
 from sklearn.pipeline import Pipeline
 import category_encoders as ce
@@ -35,7 +36,7 @@ class DateTimeEngineer(BaseEstimator,TransformerMixin):
 		# replace by getattr 
 		for opt in self.options:
 			temp[column+'_'+opt]=getattr(x,opt)
-		self.each_column_transform[column]=temp
+		self.each_column_transform[column]=temp.fillna(0)
 
 	def fit(self,X,y=None):
 		self.__check_columns(X)
@@ -70,6 +71,20 @@ class CategoryEngineer(BaseEstimator,TransformerMixin):
 	def transform(self,x):
 		return self.encoder.transform(x)
 
+class OutputEngineer(BaseEstimator,TransformerMixin):
+	"""docstring for ClassName"""
+	def __init__(self, column,is_classification=True):
+		super(OutputEngineer, self).__init__()
+		self.column = column
+		self.encoder=LabelEncoder()
+	def fit(self,X,y=None):
+		return self
+
+	def transform(self,x):
+		x[self.column+'_output']=self.encoder.fit_transform(x[self.column].fillna("Null").tolist())
+		return x
+
+
 
 class NumericalEngineer(BaseEstimator,TransformerMixin):
 	"""docstring for NumericalEngineer"""
@@ -95,8 +110,7 @@ class NumericalEngineer(BaseEstimator,TransformerMixin):
 				except:
 					continue
 				c=list(map(lambda x:x+f"_{key}",self.column_encoding_method[key]))
-				print(c)
-				scaled=pd.DataFrame(scaler.fit_transform(x[self.column_encoding_method[key]]),columns=c)
+				scaled=pd.DataFrame(scaler.fit_transform(x[self.column_encoding_method[key]].fillna(0)),columns=c)
 				temp=pd.concat([temp,scaled],axis=1)
 		except Exception as e:
 			raise e
@@ -120,11 +134,12 @@ class CastingEngineer(BaseEstimator,TransformerMixin):
 		return self
 	def transform(self,X):
 		if self.drop_key:
-			X=X.drop(self.key_columns, axis=1)
+			X=X.drop(self.key_columns, axis=1,errors='ignore')
 		X[self.date_columns]=X[self.date_columns].apply(pd.to_datetime)
-		X[self.numerical_columns]=X[self.numerical_columns].apply(pd.to_numeric)
-		X[self.category_columns]=X[self.category_columns].fillna(-1)
-		# X[self.category_columns]=X[self.category_columns].astype("category")
+		for n_col in self.numerical_columns:
+			X[n_col]=X[n_col].fillna(0).astype(str).apply(lambda x:x.split('.')[0].replace(",","") if isinstance(x,str) else x).apply(pd.to_numeric)
+		for c_col in self.category_columns:
+			X[c_col]=X[c_col].fillna("Null").apply(lambda x:x.lower())
 		return X
 
 
