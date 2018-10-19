@@ -50,13 +50,17 @@ class DateTimeEngineer(BaseEstimator,TransformerMixin):
 
 
 class CategoryEngineer(BaseEstimator,TransformerMixin):
-	"""docstring for CategoryEngineer"""
-	def __init__(self,columns, encoding_method=["OneHotEncoder"]):
+	"""Helper to encode Categorical Columns"""
+	def __init__(self,columns, encoding_method=["OneHotEncoder"],is_train=True,enc_loc=None):
 		super(CategoryEngineer, self).__init__()
 		self.options_supported= ["BackwardDifferenceEncoder","BinaryEncoder","HashingEncoder","HelmertEncoder","OneHotEncoder","OrdinalEncoder","SumEncoder","PolynomialEncoder","BaseNEncoder","TargetEncoder","LeaveOneOutEncoder"]
 		self.columns=columns
 		self.encoding_method=encoding_method[0]
+		self.is_train=is_train
+		self.enc_loc=enc_loc
 		self.__check_options(encoding_method)
+		if (not is_train) and enc_loc:
+			raise Exception("Passing enc_loc needed while testing")
 
 	def __check_options(self,options):
 		for opt in options: 
@@ -64,30 +68,42 @@ class CategoryEngineer(BaseEstimator,TransformerMixin):
 				raise NotImplementedError
 
 	def fit(self,X,y=None):
-		self.encoder=getattr(ce,self.encoding_method)(cols=self.columns,use_cat_names=True)
-		self.encoder.fit(X,y)
+		if self.is_train:
+			self.encoder=getattr(ce,self.encoding_method)(cols=self.columns,use_cat_names=True)
+			self.encoder.fit(X,y)
+		else:
+			import pickle
+			self.encoder=pickle.load(open(self.enc_loc,"rb"))
 		return self
 
 	def transform(self,x):
 		return self.encoder.transform(x)
 
 class OutputEngineer(BaseEstimator,TransformerMixin):
-	"""docstring for ClassName"""
-	def __init__(self, column,is_classification=True):
+	"""Encoder to encoder OutputClass"""
+	def __init__(self, column,is_classification=True,is_train=True,enc_loc=None):
 		super(OutputEngineer, self).__init__()
 		self.column = column
-		self.encoder=LabelEncoder()
+		self.is_train=is_train
+		self.enc_loc=enc_loc
+
 	def fit(self,X,y=None):
+		if self.is_train:
+			self.encoder=LabelEncoder()
+			self.encoder.fit(X[self.column].fillna("Null").tolist())
+		else:
+			import pickle
+			self.encoder=pickle.load(open(self.enc_loc,"rb"))
 		return self
 
 	def transform(self,x):
-		x[self.column+'_output']=self.encoder.fit_transform(x[self.column].fillna("Null").tolist())
+		x[self.column+'_output']=self.encoder.transform(x[self.column].fillna("Null").tolist())
 		return x
 
 
 
 class NumericalEngineer(BaseEstimator,TransformerMixin):
-	"""docstring for NumericalEngineer"""
+	"""Helper to Normalize/Scale numerical columns"""
 	def __init__(self, column_encoding_method):
 		super(NumericalEngineer, self).__init__()
 		self.column_encoding_method = column_encoding_method
@@ -120,7 +136,7 @@ class NumericalEngineer(BaseEstimator,TransformerMixin):
 
 
 class CastingEngineer(BaseEstimator,TransformerMixin):
-	"""docstring for NumericalEngineer"""
+	"""Helper to cast columns to proper type"""
 	def __init__(self,casting_map,drop_key=False):
 		super(CastingEngineer, self).__init__()
 		self.casting_map=casting_map
