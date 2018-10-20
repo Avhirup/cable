@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import StandardScaler,Normalizer,KBinsDiscretizer
+from sklearn.preprocessing import StandardScaler,Normalizer
 from sklearn.pipeline import Pipeline
 import category_encoders as ce
 
@@ -107,7 +107,7 @@ class NumericalEngineer(BaseEstimator,TransformerMixin):
 	def __init__(self, column_encoding_method):
 		super(NumericalEngineer, self).__init__()
 		self.column_encoding_method = column_encoding_method
-		self.__options_supported= ["KBinsDiscretizer","MinMaxScaler","StandardScaler"]
+		self.__options_supported= ["MinMaxScaler","StandardScaler"]
 
 	def __check_options(self,_options):
 		for opt in options: 

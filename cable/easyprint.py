@@ -55,29 +55,17 @@ def list_to_table(l,column_name=None):
 	return t
 
 		
-def describe_data(file_path,extension="xls",is_detailed=False):
+def describe_data(data,is_detailed=False):
 	"""
 	Makes reports to analyse and get overview of data quick
 	Input:
-	file_path: location of the file
-	extension: file_extension of the file
+	data: pandas dataframe
 	is_detailed: Describe detailed report which prints the name of the columns instead of the just numbers
 
 	#TODO:
 	* return t instead of printing
 	* additioal analystics and statistics 
 	"""
-	try:
-		if extension=="xls":
-			data=pd.read_excel(file_path)
-		elif extension=="csv":
-			data=pd.read_csv(file_path)
-		else:
-			print("Not Supported file type")
-			return 
-	except Exception as e:
-		print("Unable to Open file"+e.__traceback__)
-		return
 	#details 
 	t=PrettyTable(['Description',"Information"])
 	t.title=file_path.split('/')[-1]
