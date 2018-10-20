@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='cable',
-      version='0.0.1',
+      version='0.0.2',
       description='This package has components  for preprocessing',
       author='Avhirup',
       author_email='avhirupchakraborty@gmail.com',
