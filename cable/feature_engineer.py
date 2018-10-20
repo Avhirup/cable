@@ -104,9 +104,10 @@ class OutputEngineer(BaseEstimator,TransformerMixin):
 
 class NumericalEngineer(BaseEstimator,TransformerMixin):
 	"""Helper to Normalize/Scale numerical columns"""
-	def __init__(self, column_encoding_method):
+	def __init__(self, columns,encoding_method):
 		super(NumericalEngineer, self).__init__()
-		self.column_encoding_method = column_encoding_method
+		self.columns = columns
+		self.encoding_method=encoding_method
 		self.__options_supported= ["MinMaxScaler","StandardScaler"]
 
 	def __check_options(self,_options):
@@ -120,14 +121,10 @@ class NumericalEngineer(BaseEstimator,TransformerMixin):
 	def transform(self,x):
 		temp=pd.DataFrame()
 		try:
-			for key in self.column_encoding_method:
-				try:	
-					scaler=globals()[key]()
-				except:
-					continue
-				c=list(map(lambda x:x+f"_{key}",self.column_encoding_method[key]))
-				scaled=pd.DataFrame(scaler.fit_transform(x[self.column_encoding_method[key]].fillna(0)),columns=c)
-				temp=pd.concat([temp,scaled],axis=1)
+			scaler=globals()[self.encoding_method]()
+			c=list(map(lambda x:x+f"_{key}",self.columns))
+			scaled=pd.DataFrame(scaler.fit_transform(x[self.columns].fillna(0)),columns=c)
+			temp=pd.concat([temp,scaled],axis=1)
 		except Exception as e:
 			raise e
 		

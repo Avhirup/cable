@@ -68,8 +68,7 @@ def describe_data(data,is_detailed=False):
 	"""
 	#details 
 	t=PrettyTable(['Description',"Information"])
-	t.title=file_path.split('/')[-1]
-	print("            "+t.title)
+	t.title=data.name
 	t.add_row(['Row and Column',data.shape])
 	if not is_detailed:
 		t.add_row(['# of ID columns',len(list(find_id_columns(data.columns)))])
