@@ -104,7 +104,7 @@ class OutputEngineer(BaseEstimator,TransformerMixin):
 
 class NumericalEngineer(BaseEstimator,TransformerMixin):
 	"""Helper to Normalize/Scale numerical columns"""
-	def __init__(self, columns,encoding_method):
+	def __init__(self, columns,encoding_method="StandardScaler"):
 		super(NumericalEngineer, self).__init__()
 		self.columns = columns
 		self.encoding_method=encoding_method
@@ -122,7 +122,7 @@ class NumericalEngineer(BaseEstimator,TransformerMixin):
 		temp=pd.DataFrame()
 		try:
 			scaler=globals()[self.encoding_method]()
-			c=list(map(lambda x:x+f"_{key}",self.columns))
+			c=list(map(lambda x:x+f"_{self.encoding_method}",self.columns))
 			scaled=pd.DataFrame(scaler.fit_transform(x[self.columns].fillna(0)),columns=c)
 			temp=pd.concat([temp,scaled],axis=1)
 		except Exception as e:
