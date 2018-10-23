@@ -9,7 +9,7 @@ import category_encoders as ce
 
 class DateTimeEngineer(BaseEstimator,TransformerMixin):
 	"""Helper to Add Date/Time features to data"""
-	def __init__(self,columns,options=["dayofweek","dayofyear"]):
+	def __init__(self,columns,options=["dayofweek","dayofyear"],is_train=None,enc_loc=None):
 		self.options_supported=["dayofweek","dayofyear","dayofmonth","daysinmonth","hour","is_leap_year","is_month_end","is_month_start","is_quarter_end","is_year_start","is_year_end","minute","month","month_name","quarter","second","week","weekday","weekday_name","weekofyear"]
 		self.__check_options(options)
 		self.options=options
@@ -59,8 +59,6 @@ class CategoryEngineer(BaseEstimator,TransformerMixin):
 		self.is_train=is_train
 		self.enc_loc=enc_loc
 		self.__check_options(encoding_method)
-		if (not is_train) and enc_loc:
-			raise Exception("Passing enc_loc needed while testing")
 
 	def __check_options(self,options):
 		for opt in options: 
@@ -71,6 +69,9 @@ class CategoryEngineer(BaseEstimator,TransformerMixin):
 		if self.is_train:
 			self.encoder=getattr(ce,self.encoding_method)(cols=self.columns,use_cat_names=True)
 			self.encoder.fit(X,y)
+			import pickle
+			with open(self.enc_loc,"wb") as f:
+				pickle.dump(self.encoder,f)	
 		else:
 			import pickle
 			self.encoder=pickle.load(open(self.enc_loc,"rb"))
@@ -91,6 +92,9 @@ class OutputEngineer(BaseEstimator,TransformerMixin):
 		if self.is_train:
 			self.encoder=LabelEncoder()
 			self.encoder.fit(X[self.column].fillna("Null").tolist())
+			import pickle
+			with open(self.enc_loc,"wb") as f:
+				pickle.dump(self.encoder,f)	
 		else:
 			import pickle
 			self.encoder=pickle.load(open(self.enc_loc,"rb"))
@@ -104,11 +108,13 @@ class OutputEngineer(BaseEstimator,TransformerMixin):
 
 class NumericalEngineer(BaseEstimator,TransformerMixin):
 	"""Helper to Normalize/Scale numerical columns"""
-	def __init__(self, columns,encoding_method="StandardScaler"):
+	def __init__(self, columns,encoding_method="StandardScaler",is_train=True,enc_loc=None):
 		super(NumericalEngineer, self).__init__()
 		self.columns = columns
 		self.encoding_method=encoding_method
 		self.__options_supported= ["MinMaxScaler","StandardScaler"]
+		self.is_train=is_train
+		self.enc_loc=enc_loc
 
 	def __check_options(self,_options):
 		for opt in options: 
@@ -116,14 +122,24 @@ class NumericalEngineer(BaseEstimator,TransformerMixin):
 				raise NotImplementedError		
 
 	def fit(self,X,y=None):
+		if self.is_train:
+			self.scaler=globals()[self.encoding_method]()
+
+			c=list(map(lambda x:x+f"_{self.encoding_method}",self.columns))
+			self.scaler.fit(X[self.columns].fillna(0))
+			import pickle
+			with open(self.enc_loc,"wb") as f:
+				pickle.dump(self.scaler,f)	
+		else:
+			import pickle
+			self.scaler=pickle.load(open(self.enc_loc,"rb"))
 		return self
 
 	def transform(self,x):
 		temp=pd.DataFrame()
 		try:
-			scaler=globals()[self.encoding_method]()
 			c=list(map(lambda x:x+f"_{self.encoding_method}",self.columns))
-			scaled=pd.DataFrame(scaler.fit_transform(x[self.columns].fillna(0)),columns=c)
+			scaled=pd.DataFrame(self.scaler.transform(x[self.columns].fillna(0)),columns=c)
 			temp=pd.concat([temp,scaled],axis=1)
 		except Exception as e:
 			raise e
