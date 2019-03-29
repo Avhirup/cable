@@ -7,10 +7,10 @@ Generates report for understanding data
 	* [x]Graphical Representation of Distribution of data
 	* [x]Corelation matrix 
 
-##FeatureEngineers
+## FeatureEngineers
 Helpers for feature engineering
 
-##MergeEngineer
+## MergeEngineer
 Helper to merge files
 
 
