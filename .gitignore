@@ -1,2 +1,4 @@
 __pycache__/*
 .DS_Store
+cable/__pycache__/
+.ipython_checkpoints//
