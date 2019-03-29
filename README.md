@@ -4,8 +4,8 @@ Utility Module for preprocessing and transformation for data science module
 Generates report for understanding data
 * Support for structured data
 	* [x]General Descriptors about type and count
-	* [ ]Graphical Representation of Distribution of data
-	* [ ]Corelation matrix 
+	* [x]Graphical Representation of Distribution of data
+	* [x]Corelation matrix 
 
 ##FeatureEngineers
 Helpers for feature engineering
