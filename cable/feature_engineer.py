@@ -5,7 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler,Normalizer
 from sklearn.pipeline import Pipeline
 import category_encoders as ce
-
+import pickle 
 
 class DateTimeEngineer(BaseEstimator,TransformerMixin):
 	"""Helper to Add Date/Time features to data"""
@@ -69,11 +69,9 @@ class CategoryEngineer(BaseEstimator,TransformerMixin):
 		if self.is_train:
 			self.encoder=getattr(ce,self.encoding_method)(cols=self.columns,use_cat_names=True)
 			self.encoder.fit(X,y)
-			import pickle
 			with open(self.enc_loc,"wb") as f:
 				pickle.dump(self.encoder,f)	
 		else:
-			import pickle
 			self.encoder=pickle.load(open(self.enc_loc,"rb"))
 		return self
 
@@ -92,11 +90,9 @@ class OutputEngineer(BaseEstimator,TransformerMixin):
 		if self.is_train:
 			self.encoder=LabelEncoder()
 			self.encoder.fit(X[self.column].fillna("Null").tolist())
-			import pickle
 			with open(self.enc_loc,"wb") as f:
 				pickle.dump(self.encoder,f)	
 		else:
-			import pickle
 			self.encoder=pickle.load(open(self.enc_loc,"rb"))
 		return self
 
@@ -127,11 +123,9 @@ class NumericalEngineer(BaseEstimator,TransformerMixin):
 
 			c=list(map(lambda x:x+f"_{self.encoding_method}",self.columns))
 			self.scaler.fit(X[self.columns].fillna(0))
-			import pickle
 			with open(self.enc_loc,"wb") as f:
 				pickle.dump(self.scaler,f)	
 		else:
-			import pickle
 			self.scaler=pickle.load(open(self.enc_loc,"rb"))
 		return self
 
