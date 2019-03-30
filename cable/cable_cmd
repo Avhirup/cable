@@ -1,17 +1,17 @@
-#!usr/bin/python
-
+#!/Users/avhirupchakraborty/Programming/anaconda3/bin/python3
+from organizer import Organizer
 import argparse
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--project_name",help="Project name",type=str,required=True)
 	parser.add_argument("--path", help="path to the project ",required=True)
-	parser.add_argument('--val',
+	parser.add_argument('--op',
                       choices=['make_folder','sweep','c'],
                       help='methods that can be done',required=True)
 
 	args = parser.parse_args()
 	organizer=Organizer(args.project_name,args.path)
-	if args.val=='make_folder':
+	if args.op=='make_folder':
 		organizer.make_folders()
 
