@@ -19,7 +19,7 @@ setup(name='cable',
       version='0.0.3',
       description='This package has components  for preprocessing',
       author='Avhirup',
-      scripts=['cable/bin/cable','cable/bin/organizer.py'],
+      scripts=['cable/bin/cable'],
       author_email='avhirupchakraborty@gmail.com',
       packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
     )
